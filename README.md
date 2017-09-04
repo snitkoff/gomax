@@ -1,1 +1,3 @@
-# gomax
+## WIP:GOMAX - golang REST framework
+
+
