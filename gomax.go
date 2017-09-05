@@ -1,3 +1,6 @@
 package gomax
 
-const VERSION = "1.0"
+// Main gomax constants
+const (
+	Version = "1.0"
+)

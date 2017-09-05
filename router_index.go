@@ -4,45 +4,56 @@ import "net/http"
 
 type index struct {
 	tree  *node
-	index map[uInt]route
+	index map[uint64]route
 }
 
 func newIndex() *index {
 	return &index{
-		index: make(map[uInt]route),
+		index: make(map[uint64]route),
 	}
 }
 
 func (i *index) find(req *http.Request) *route {
 	salt := i.generateSalt(req.Method)
-	sHashes := [HTTP_SECTION_COUNT]uInt{}
+	sHashes := [URLSectionCount]uint64{}
 	level := i.generateUintSlice(req.URL.Path, salt, &sHashes)
 	return i.findX(level, 0, i.tree, &sHashes)
 }
 
-func (i *index) generateSalt(s string) uInt {
-	return uInt(s[0] + s[1])
+func (i *index) generateSalt(s string) uint64 {
+	return uint64(s[0] + s[1])
 }
 
-func (i *index) generateUintSlice(s string, salt uInt, cHashes *[HTTP_SECTION_COUNT]uInt) int {
-	c := DELIMITER_BYTE
-	na := 0
+func (i *index) generateUintSlice(s string, salt uint64, sHashes *[URLSectionCount]uint64) int {
+	c := LimiterByte
+	n := 0
 	length := len(s)
 	if length == 1 {
-		cHashes[0] = SLASH_HASH
+		sHashes[0] = SlashHash
 		return 0
 	}
-	var total typeHash = salt
+	var total = salt
 	for i := 1; i < length; i++ {
 		if s[i] == c {
-			cHashes[na] = total
+			sHashes[n] = total
 			total = salt
-			na++
+			n++
 			continue
 		}
-		total = total<<5 + typeHash(s[i])
+		total = total<<5 + uint64(s[i])
 	}
-	cHashes[na] = total
-	na++
-	return na
+	sHashes[n] = total
+	n++
+	return n
+}
+
+func (i *index) findX(ln int, level int, tree2 *node, cHashes *[URLSectionCount]uint64) *route {
+	if ln == level {
+		return tree2.route
+	} else if z1, ok := tree2.child[cHashes[level]]; ok {
+		return i.findX(ln, level+1, z1, cHashes)
+	} else if z2, ok := tree2.child[LimiterUnit]; ok {
+		return i.findX(ln, level+1, z2, cHashes)
+	}
+	return nil
 }

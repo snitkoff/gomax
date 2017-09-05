@@ -1,8 +1,13 @@
 package gomax
 
-type uInt uint64
-
+// Can be edit
 const (
-	// Maximum number of sections in the URL
-	HTTP_SECTION_COUNT = 32
+	URLSectionCount int = 32
+)
+
+// Do not edit
+const (
+	LimiterByte byte   = 47
+	SlashHash   uint64 = 1
+	LimiterUnit uint64 = 47
 )
